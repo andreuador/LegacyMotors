@@ -5,6 +5,9 @@ namespace App\DataFixtures;
 use App\Entity\PaymentDetails;
 use App\Entity\Reservation;
 use App\Entity\Review;
+use App\Entity\Order;
+use App\Entity\Invoice;
+use DateTime;
 use App\Repository\CustomerRepository;
 use App\Repository\VehicleRepository;
 use Doctrine\Bundle\FixturesBundle\Fixture;
@@ -15,7 +18,6 @@ use Faker\Generator;
 
 class ReservationFixtures extends Fixture implements DependentFixtureInterface
 {
-
     private Generator $faker;
     private CustomerRepository $customerRepository;
     private VehicleRepository $vehicleRepository;
@@ -25,15 +27,18 @@ class ReservationFixtures extends Fixture implements DependentFixtureInterface
         $this->customerRepository = $customerRepository;
         $this->vehicleRepository = $vehicleRepository;
     }
+
     public function load(ObjectManager $manager): void
     {
-
         $customers = $this->customerRepository->findAll();
         $vehicles = $this->vehicleRepository->findAll();
 
-        // Solo crear reservas si hay clientes y vehiculos disponibles
-        if (!empty ($customers) && !empty ($vehicles)) {
-            for ($i = 0; $i < 20; $i++) {
+        // Solo crear reservas si hay clientes y vehículos disponibles
+        if (!empty($customers) && !empty($vehicles)) {
+            // Seleccionar un subconjunto de vehículos para reservar
+            $vehiclesToReserve = (count($vehicles) > 5) ? array_rand($vehicles, 5) : array_keys($vehicles);
+
+            for ($i = 0; $i < 5 && $i < count($vehiclesToReserve); $i++) {
                 $reservation = new Reservation();
                 $startDate = $this->faker->dateTimeBetween('now', '+1 month');
 
@@ -46,13 +51,12 @@ class ReservationFixtures extends Fixture implements DependentFixtureInterface
                 $reservation->setTotalPrice($this->faker->numberBetween(100, 1000));
                 $reservation->setDeleted(false);
 
-                // Asignar un cliente y un vehiculo a la reserva
+                // Asignar un cliente y un vehículo a la reserva
                 $randomCustomer = array_rand($customers);
                 $customer = $customers[$randomCustomer];
                 $reservation->setCustomer($customer);
 
-                $randomVehicle = array_rand($vehicles);
-                $vehicle = $vehicles[$randomVehicle];
+                $vehicle = $vehicles[$vehiclesToReserve[$i]];
                 $reservation->setVehicle($vehicle);
 
                 // Crear la review aleatoria
@@ -73,6 +77,27 @@ class ReservationFixtures extends Fixture implements DependentFixtureInterface
 
                 $reservation->setPaymentDetails($paymentDetails);
 
+                // Crear Order
+                $order = new Order();
+                $order->setDeleted(false);
+                $order->setState($this->faker->randomElement(['En proceso', 'Completado']));
+
+                $manager->persist($order); // Persistir la orden antes de asociarla
+
+                $reservation->setOrders($order);
+
+                // Crear Invoice
+                $invoice = new Invoice();
+                $invoice->setDeleted(false);
+                $invoice->setNumber($this->faker->numberBetween('200€', '1000€'));
+                $invoice->setPrice($this->faker->numberBetween(100000, 1000000));
+                $dateString = $this->faker->dateTimeBetween('-1 year', 'now')->format('Y-m-d');
+                $date = DateTime::createFromFormat('Y-m-d', $dateString);
+                $invoice->setDate($date);
+
+                $manager->persist($invoice);
+
+                $reservation->setInvoices($invoice);
 
                 $manager->persist($reservation);
                 $manager->persist($review);
@@ -85,7 +110,6 @@ class ReservationFixtures extends Fixture implements DependentFixtureInterface
 
     public function getDependencies()
     {
-        // TODO: Implement getDependencies() method.
         return [CustomerFixtures::class, VehicleFixtures::class];
     }
 }

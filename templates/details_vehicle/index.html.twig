@@ -25,6 +25,16 @@
                      alt="Imagen del Coche">
             </div>
         </div>
+
+        <div class="row">
+            <div class="col-12">
+                {% if not vehicle.available %}
+                    <button class="btn bg-quaternary-lm m-2" disabled>Reservado</button>
+                {% else %}
+                    <a class="btn bg-quaternary-lm btn-normal-hover m-2" href="{{ path('app_catalogue_add_vehicle', {'id': vehicle.id })}}">Reservar</a>
+                {% endif %}
+            </div>
+        </div>
     </div>
 
     <div class="container mt-5" id="specifications">

@@ -29,7 +29,7 @@
 
 .btn-normal-hover:hover {
     background-color: var(--btn-normal-hover) !important;
-    color: var(--btn-text) !important;
+    color: var(--btn-text-hover) !important;
 }
 
 .btn-aside-hover:hover {

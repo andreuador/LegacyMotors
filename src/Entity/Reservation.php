@@ -43,6 +43,12 @@ class Reservation
     #[ORM\Column]
     private ?bool $isDeleted = null;
 
+    #[ORM\ManyToOne(inversedBy: 'reservations')]
+    private ?Order $orders = null;
+
+    #[ORM\ManyToOne(inversedBy: 'reservations')]
+    private ?Invoice $invoices = null;
+
     public function __construct()
     {
         $this->reviews = new ArrayCollection();
@@ -163,6 +169,30 @@ class Reservation
     public function setDeleted(bool $isDeleted): static
     {
         $this->isDeleted = $isDeleted;
+
+        return $this;
+    }
+
+    public function getOrders(): ?Order
+    {
+        return $this->orders;
+    }
+
+    public function setOrders(?Order $orders): static
+    {
+        $this->orders = $orders;
+
+        return $this;
+    }
+
+    public function getInvoices(): ?Invoice
+    {
+        return $this->invoices;
+    }
+
+    public function setInvoices(?Invoice $invoices): static
+    {
+        $this->invoices = $invoices;
 
         return $this;
     }

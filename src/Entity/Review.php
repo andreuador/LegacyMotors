@@ -26,6 +26,9 @@ class Review
     #[ORM\ManyToOne(inversedBy: 'reviews')]
     private ?Reservation $reservation = null;
 
+    #[ORM\ManyToOne(inversedBy: 'reviews')]
+    private ?Customer $customer = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -75,6 +78,18 @@ class Review
     public function setReservation(?Reservation $reservation): static
     {
         $this->reservation = $reservation;
+
+        return $this;
+    }
+
+    public function getCustomer(): ?Customer
+    {
+        return $this->customer;
+    }
+
+    public function setCustomer(?Customer $customer): static
+    {
+        $this->customer = $customer;
 
         return $this;
     }

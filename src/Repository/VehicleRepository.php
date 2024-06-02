@@ -24,25 +24,23 @@ class VehicleRepository extends ServiceEntityRepository
 
     public function findAllQuery(): Query {
         return $this->createQueryBuilder('v')
+            ->andWhere('v.available = true')
+            ->andWhere('v.vehicleOrder IS NULL')
             ->andWhere('v.isDeleted IS NULL OR v.isDeleted = 0')
             ->orderBy('v.id', 'ASC')
-            ->getQuery()
-            ;
+            ->getQuery();
     }
 
     public function findByTextQuery(string $value): Query {
         return $this->createQueryBuilder('v')
             ->join('v.brand', 'b')
-            ->join('m.model', 'm')
-            ->where('b.name LIKE :value')
-            ->orWhere('m.name LIKE :value')
-            ->orWhere('v.color LIKE :value')
-            ->orWhere('v.transmission LIKE :value')
-            ->orWhere('v.fuel LIKE :value')
-            ->orWhere('v.year LIKE :value')
-            ->orWhere('v.price LIKE :value')
+            ->join('b.models', 'm') // Ajuste para la relación indirecta
+            ->andWhere('v.available = true')
+            ->andWhere('v.vehicleOrder IS NULL')
+            ->andWhere('v.isDeleted IS NULL OR v.isDeleted = 0')
+            ->andWhere('b.name LIKE :value OR m.name LIKE :value OR v.color LIKE :value OR v.transmission LIKE :value OR v.fuel LIKE :value OR v.year LIKE :value OR v.price LIKE :value')
             ->setParameter('value', '%' . $value . '%')
-            ->setParameter('v.id', 'ASC')
+            ->orderBy('v.id', 'ASC')
             ->getQuery();
     }
 
